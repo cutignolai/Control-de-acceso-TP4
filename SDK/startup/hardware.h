@@ -20,10 +20,18 @@
  ******************************************************************************/
 
 #include "fsl_device_registers.h"
+#include "core_cm4.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#define __CORE_CLOCK__ 	100000000U
+#define __CORE_CLOCK__  100000000U
+#define __FOREVER__     for(;;)
+#define __ISR__         void __attribute__ ((interrupt))
 
 void hw_Init (void);
+
+void hw_EnableInterrupts (void);
+void hw_DisableInterrupts (void);
 
 /* See IRQn_Type for IRQn definitions
  * Example: NVIC_EnableIRQ(SysTick_IRQn);
@@ -31,7 +39,7 @@ void hw_Init (void);
  */
 
 /* See this list for ISR definitions (ISR ~ Handler/IRQHandler)
- * Example: __ISR__ SysTick_Handler (void);
+ * Example: __ISR__ SysTick_Handler1 (void);
  */
 /*
  *    NMI_Handler
@@ -42,7 +50,7 @@ void hw_Init (void);
  *    SVC_Handler
  *    DebugMon_Handler
  *    PendSV_Handler
- *    SysTick_Handler
+ *    SysTick_Handler1
  *    DMA0_IRQHandler
  *    DMA1_IRQHandler
  *    DMA2_IRQHandler
@@ -132,3 +140,4 @@ void hw_Init (void);
  */
 
 #endif /* _HARDWARE_H_ */
+

@@ -100,7 +100,7 @@ WEAK void UsageFault_Handler(void);
 WEAK void SVC_Handler(void);
 WEAK void DebugMon_Handler(void);
 WEAK void PendSV_Handler(void);
-WEAK void SysTick_Handler(void);
+WEAK void SysTick_Handler1(void);
 WEAK void IntDefaultHandler(void);
 
 //*****************************************************************************
@@ -326,7 +326,7 @@ void (* const g_pfnVectors[])(void) = {
     DebugMon_Handler,                  // Debug monitor handler
     0,                                 // Reserved
     PendSV_Handler,                    // The PendSV handler
-    SysTick_Handler,                   // The SysTick handler
+    SysTick_Handler1,                   // The SysTick handler
 
     // Chip Level - MK64F12
     DMA0_IRQHandler,                      // 16 : DMA Channel 0 Transfer Complete
@@ -596,7 +596,7 @@ WEAK_AV void PendSV_Handler(void)
 { while(1) {}
 }
 
-WEAK_AV void SysTick_Handler(void)
+WEAK_AV void SysTick_Handler1(void)
 { while(1) {}
 }
 
