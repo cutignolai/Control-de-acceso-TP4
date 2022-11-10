@@ -67,6 +67,8 @@ static bool data_was_stored;
 static bool volatile enable_interrupt;
 static bool SS_arrived;
 
+
+
 /*******************************************************************************
  *         FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -152,6 +154,11 @@ uint8_t* processData (void){
     uint8_t data_index;
     for (data_index = 0; data_index < MAX_DATA; data_index++){      //the 200 bits of the array
         orderData(data[data_index]);
+    }
+    //Test section. Do not let it be. Default ID: 01234567
+    int i;
+    for (i=0; i<8; i++){
+        stored_ID[i] = '0' + i;
     }
     return (uint8_t*) &stored_ID[0];
 }

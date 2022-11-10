@@ -1,5 +1,6 @@
 #include "hardware.h"
 #include  <os.h>
+#include "\drivers\card_reader.h"
 
 /* LEDs */
 #define LED_R_PORT            PORTB
@@ -36,14 +37,21 @@ static CPU_STK Task2Stk[TASK2_STK_SIZE];
 
 /* Example semaphore */
 static OS_SEM semTest;
+static OS_SEM semCardReader;
 
-static void Task2(void *p_arg) {
+//test variables
+static uint8_t sem_counter;
+
+static void Task2(void *p_arg) {        //en este ejemplo simboliza al lector de tarjeta
     (void)p_arg;
     OS_ERR os_err;
 
     while (1) {
-        OSSemPost(&semTest, OS_OPT_POST_1, &os_err);
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+        sem_counter++;                  //simula que pregunta si hay algo
+        if (sem_counter == 10){         //solo en 1 de cada 10 entradas es que leyó la tarjeta
+            OSSemPost(&semCardReader, OS_OPT_POST_1, &os_err);      //habilita al main diciendo que si la leyó
+        }       
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u, OS_OPT_TIME_HMSM_STRICT, &os_err);  //ojo con los delays
         LED_R_TOGGLE();
     }
 }
@@ -55,6 +63,9 @@ static void TaskStart(void *p_arg) {
 
     /* Initialize the uC/CPU Services. */
     CPU_Init();
+    /* Initialize the Card Reader Services. */
+    initCardReader();
+    OSSemCreate(&semCardReader, "Sem Card Reader", 0u, &os_err);
 
 #if OS_CFG_STAT_TASK_EN > 0u
     /* (optional) Compute CPU capacity with no task running */
@@ -86,6 +97,10 @@ static void TaskStart(void *p_arg) {
     while (1) {
         OSTimeDlyHMSM(0u, 0u, 0u, 1000u, OS_OPT_TIME_HMSM_STRICT, &os_err);
         LED_G_TOGGLE();
+        OSSemPend(&semCardReader, 0, OS_OPT_PEND_BLOCKING, NULL, &os_err);
+        uint8_t* data_ptr;
+        data_ptr = processData();       // acá ya es chequear si efectivamente quedó guardado 01234567 en data_ptr
+
     }
 }
 
