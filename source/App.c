@@ -8,6 +8,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include <stdio.h>
+#include  <os.h>
 #include <string.h>
 #include <drivers/board.h>
 #include <drivers/gpio.h>
@@ -85,6 +86,8 @@ typedef enum{
 #define WRONG_TIME_1        5
 #define WRONG_TIME_2        30
 
+#define SEM_AMMOUNT			3
+
 /*******************************************************************************
  * ENUMS AND STRUCTURES
  ******************************************************************************/
@@ -137,6 +140,8 @@ static tim_id_t sec_timer;
 static uint8_t sec_count;
 static uint8_t wrong_count;
 
+// SEMAFOROS
+static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -159,12 +164,22 @@ void App_Init (void)
 	messageSetStatus(ACTIVADO);
 	resetReader();
 
+	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) encoderSemPointer();
+	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) cardSemPointer();
+	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) buttonSemPointer();
+
+
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
 	eventosDelMenu_t evento = EVENTO_NONE;
+
+	OSPendMulti(&sem_pend_table[0], SEM_AMMOUNT, 0, OS_OPT_PEND_BLOCKING, &os_err);
+
+	// NO VA A AVANZAR HASTA QUE NO HAYA ALUN SEMAFORO ACTIVADO
 
 	// Analizo si hubo un evento
 	if(CardReaderIsReady())
