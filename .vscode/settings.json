@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "hardware.h": "c",
+        "core_cm4.h": "c"
+    }
+}

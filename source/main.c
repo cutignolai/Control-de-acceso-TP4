@@ -13,30 +13,10 @@
 #include <drivers/user.h>
 #include <drivers/message.h>
 
-/* LEDs */
-#define LED_R_PORT            PORTB
-#define LED_R_GPIO            GPIOB
-#define LED_G_PORT            PORTE
-#define LED_G_GPIO            GPIOE
-#define LED_B_PORT            PORTB
-#define LED_B_GPIO            GPIOB
-#define LED_R_PIN             22
-#define LED_G_PIN             26
-#define LED_B_PIN             21
-#define LED_B_ON()           (LED_B_GPIO->PCOR |= (1 << LED_B_PIN))
-#define LED_B_OFF()          (LED_B_GPIO->PSOR |= (1 << LED_B_PIN))
-#define LED_B_TOGGLE()       (LED_B_GPIO->PTOR |= (1 << LED_B_PIN))
-#define LED_G_ON()           (LED_G_GPIO->PCOR |= (1 << LED_G_PIN))
-#define LED_G_OFF()          (LED_G_GPIO->PSOR |= (1 << LED_G_PIN))
-#define LED_G_TOGGLE()       (LED_G_GPIO->PTOR |= (1 << LED_G_PIN))
-#define LED_R_ON()           (LED_R_GPIO->PCOR |= (1 << LED_R_PIN))
-#define LED_R_OFF()          (LED_R_GPIO->PSOR |= (1 << LED_R_PIN))
-#define LED_R_TOGGLE()       (LED_R_GPIO->PTOR |= (1 << LED_R_PIN))
+/********************************************************************************************************
+ *                          CONSTANT AND MACRO DEFINITIONS USING #DEFINE                                *
+ ********************************************************************************************************/
 
-
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
 
 //----------- ESTADOS DEL MENU -----------
 typedef enum{
@@ -72,45 +52,55 @@ typedef enum{
 } colored_led_t;
 //-----------------------------------------
 
-
+//--------- CANT. DE CARACTERES -----------
 #define MAX_UNIT_ID         8
 #define MIN_UNIT_PASS		4
 #define MAX_UNIT_PASS       5
+//-----------------------------------------
 
+//----------- FLAGS DE MENSAJES -----------
 #define READY               true
 #define NOT_READY           !READY
+#define ACTIVADO            true
+#define DESACTIVADO         false
+//-----------------------------------------
 
+//------------ FLAGS DE USUARIO -----------
 #define USUARIO_VALIDO      true
 #define USUARIO_INVALIDO    !USUARIO_VALIDO
+//-----------------------------------------
 
+//------------ FLAGS DE CLICK -------------
 #define ENTER_CLICK         1
 #define BRILLO_CLICK        2
 #define SUPR_CLICK          3
- 
 #define SI                  true
 #define NO                  false
+//-----------------------------------------
 
-#define ACTIVADO            true
-#define DESACTIVADO         false
-
+//---------- FLAGS DE APERTURA ------------
 #define OPEN_TIME           5000
 #define SEC                 1000
 #define WRONG_TIME_1        5
 #define WRONG_TIME_2        30
+//-----------------------------------------
 
 
-/* Task Start */
-#define TASKSTART_STK_SIZE 		512u
-#define TASKSTART_PRIO 			2u
-static OS_TCB TaskStartTCB;
-static CPU_STK TaskStartStk[TASKSTART_STK_SIZE];
+//----------- TASK PRINCIPAL --------------
+#define TASK_MAIN_STK_SIZE 		512u
+#define TASK_MAIN_PRIO 			2u
+static OS_TCB TaskMainTCB;
+static CPU_STK TaskMainStk[TASK_MAIN_STK_SIZE];
+//-----------------------------------------
 
-/* Task 2 */
-#define TASK2_STK_SIZE			256u
-#define TASK2_STK_SIZE_LIMIT	(TASK2_STK_SIZE / 10u)
-#define TASK2_PRIO              3u
-static OS_TCB Task2TCB;
-static CPU_STK Task2Stk[TASK2_STK_SIZE];
+//-------------- TASK NUBE ----------------
+#define TASK_CLOUD_STK_SIZE			256u
+#define TASK_CLOUD_STK_SIZE_LIMIT	(TASK_CLOUD_STK_SIZE / 10u)
+#define TASK_CLOUD_PRIO              3u
+static OS_TCB TASK_CLOUDTCB;
+static CPU_STK TASK_CLOUDStk[TASK_CLOUD_STK_SIZE];
+//-----------------------------------------
+
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -136,33 +126,50 @@ static void pass_reset();
  * VARIABLES
  ******************************************************************************/
 
-// ESTADOS
+//----------------- ESTADOS ------------------
 static estadosDelMenu_t estado = ESTADO_INIT;
 static estadosDelMenu_t ultimo_estado = ESTADO_INIT;
+//--------------------------------------------
 
-// ID 
+//------------------- ID ---------------------
 static uint8_t id[] = {0, 0, 0, 0, 0, 0, 0, 0};
 static uint8_t posicion_id = 0;
+//--------------------------------------------
 
-// CONTRASENA
+//--------------- CONTRASENA -----------------
 static uint8_t pass[] = {0, 0, 0, 0, 0};
 static uint8_t posicion_pass = 0;
+//--------------------------------------------
 
-// MESSAGE COMPLETE
+//------------ MESSAGE COMPLETE --------------
 static bool ha_hecho_click = NO;
 static bool user_is_ready = false;
+//--------------------------------------------
 
-// TIMERS
+//------------------ TIMERS ------------------
 static tim_id_t sec_timer;
 static uint8_t sec_count;
 static uint8_t wrong_count;
+//--------------------------------------------
 
 
+//---------------- SEMAFOROS -----------------
 
-/* Example semaphore */
-static OS_SEM semTest;
+// Encoder
+static OS_SEM semEnc;
 
-static void Task2(void *p_arg) {
+// Click
+static OS_SEM semClick;
+
+// Display
+static OS_SEM semDisp;
+
+// Card
+static OS_SEM semCard;
+
+//--------------------------------------------
+
+static void TaskCloud(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
 
@@ -174,7 +181,7 @@ static void Task2(void *p_arg) {
 }
 
 
-static void TaskStart(void *p_arg) 
+static void TaskMain(void *p_arg) 
 {
     (void)p_arg;
     OS_ERR os_err;
@@ -282,14 +289,14 @@ int main(void)
  #endif
     OS_CPU_SysTickInit(SystemCoreClock / (uint32_t)OSCfg_TickRate_Hz);
 
-    OSTaskCreate(&TaskStartTCB,
+    OSTaskCreate(&TaskMainTCB,
                  "App Task Start",
-                  TaskStart,
+                  TaskMain,
                   0u,
-                  TASKSTART_PRIO,
-                 &TaskStartStk[0u],
-                 (TASKSTART_STK_SIZE / 10u),
-                  TASKSTART_STK_SIZE,
+                  TASK_MAIN_PRIO,
+                 &TTaskMainStk[0u],
+                 (TASK_MAIN_STK_SIZE / 10u),
+                  TASK_MAIN_STK_SIZE,
                   0u,
                   0u,
                   0u,
