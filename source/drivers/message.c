@@ -34,11 +34,21 @@
 static bool status = NO_MSG;
 messageEvent_t msg_event;
 
+//Semáforo del mensaje
+static OS_SEM semMsg;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+void messageInit(void)
+{
+	//Creamos el semaforo
+	OS_ERR os_err;
+	OSSemCreate(&semMsg, "Sem Message", 0u, &os_err);
+}
+
 
 bool messageHandlerStatus(){
     if(status){
@@ -61,9 +71,15 @@ messageEvent_t messageGetEvent(){
 
 bool messageSetStatus(bool change_state){            //Setter para que la app me lo pueda cambiar
 	status = change_state;
+	OS_ERR os_err;
+	OSSemPost(&semMsg, OS_OPT_POST_1, &os_err);
 	return status;
 }
 
+OS_SEM* getMessageSemPointer()
+{
+	return &semMsg;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS

@@ -10,7 +10,7 @@
  *                      INCLUDE HEADER FILES                                    *
  ******************************************************************************/
 
-
+#include  <os.h>
 
 
 /*******************************************************************************
@@ -48,6 +48,7 @@ bool encoderSetStatus(bool change_state);     //Me setea el status para que no q
 
 encoderEvent_t encoderGetEvent();             //Me devuelve si fue un giro hacia la derecha, izquierda, click o nada aun
 
+OS_SEM* getEncoderSemPointer();
 
 
 

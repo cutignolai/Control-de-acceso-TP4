@@ -11,7 +11,7 @@
 #include "board_encoder_display.h"
 #include "button.h"
 #include "timer.h"
-
+#include  <os.h>
 
 /*******************************************************************************
  *                 CONSTANT AND MACRO DEFINITIONS USING #DEFINE                 *
@@ -52,6 +52,9 @@ static ttick_t click_cnt;                	// timer div
 static bool long_click_en;	
 static ttick_t long_click_cnt;           	// timer div
 
+
+//Semáforo del encoder
+static OS_SEM semButton;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -74,6 +77,10 @@ void initButton() {
     //Periodic Interuption ---> button_callback (1ms)
 	button_timer = timerGetId();
 	timerStart(button_timer, TIMER_MS2TICKS(PERIODIC_BUTTON_TIME), TIM_MODE_PERIODIC, callback_button);
+
+	//Creamos el semaforo
+	OS_ERR os_err;
+	OSSemCreate(&semButton, "Sem Button", 0u, &os_err);
 }
 
 bool buttonGetStatus(){            //Si hay un evento, devolveme true, sino devolveme un false
@@ -94,6 +101,10 @@ void buttonSetStatus(bool change_status){            //Setter para que la app me
 	status = change_status;
 }
 
+OS_SEM* getButtonSemPointer(void)
+{
+	return &semButton;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -159,6 +170,7 @@ static void callback_button(void){
 
 static void callback_click(void){ 
 
+	OS_ERR os_err;
 	click_en = false;			// Desactivo contador
 
     if (long_click_cnt >= MAX_LONG_CLICK){
@@ -166,6 +178,7 @@ static void callback_click(void){
         status = true;                  		// Hubo un cambio
         click_counter = 0;
         long_click_cnt = 0;
+        OSSemPost(&semButton, OS_OPT_POST_1, &os_err);
     }
 
     if (click_counter == 1){      // Si se apreto una vez
@@ -173,18 +186,21 @@ static void callback_click(void){
         status = true;            // Hubo un cambio
         click_counter = 0;
         long_click_cnt = 0;
+        OSSemPost(&semButton, OS_OPT_POST_1, &os_err);
     }
     else if (click_counter == 2){   // Si se apreto dos veces
         turn = CLICK_2;
         status = true;              // Hubo un cambio
         click_counter = 0;
         long_click_cnt = 0;
+        OSSemPost(&semButton, OS_OPT_POST_1, &os_err);
     }
     else if (click_counter >= 3){
         turn = CLICK_3;             // Si se apreto mas de dos veces, se asume como 3
         status = true;              // Hubo un cambio
         click_counter = 0;
         long_click_cnt = 0;
+        OSSemPost(&semButton, OS_OPT_POST_1, &os_err);
     }
     button_event = turn;
 }

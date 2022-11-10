@@ -158,16 +158,18 @@ void App_Init (void)
 	initLeds();
 	initCardReader();
 
+	messageInit();
+
 	sec_timer = timerGetId();
 	timerCreate(sec_timer, TIMER_MS2TICKS(SEC), TIM_MODE_PERIODIC, sec_callback);
 
 	messageSetStatus(ACTIVADO);
 	resetReader();
 
-	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) encoderSemPointer();
-	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) cardSemPointer();
-	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) buttonSemPointer();
-
+	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) getEncoderSemPointer();
+	// sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
+	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getButtonSemPointer();
+	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) getMessageSemPointer();
 
 
 }
@@ -175,6 +177,8 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+	OS_ERR os_err;
+
 	eventosDelMenu_t evento = EVENTO_NONE;
 
 	OSPendMulti(&sem_pend_table[0], SEM_AMMOUNT, 0, OS_OPT_PEND_BLOCKING, &os_err);

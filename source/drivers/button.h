@@ -9,7 +9,7 @@
 /*******************************************************************************
  *                      INCLUDE HEADER FILES                                    *
  ******************************************************************************/
-
+#include  <os.h>
 
 /*******************************************************************************
  *          CONSTANT AND MACRO DEFINITIONS USING #DEFINE                        *
@@ -54,7 +54,7 @@ void buttonSetStatus(bool change_state);     //Me setea el status para que no qu
 
 buttonEvent_t buttonGetEvent();              //Me devuelve si fue un giro hacia la derecha, izquierda, click o nada aun
 
-
+OS_SEM* getButtonSemPointer();
 /*******************************************************************************
  ******************************************************************************/
 

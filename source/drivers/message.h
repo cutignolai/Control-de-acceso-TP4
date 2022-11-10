@@ -13,6 +13,7 @@
 
 #include "gpio.h"
 #include "display.h"
+#include  <os.h>
 
 /*******************************************************************************
  *              CONSTANT AND MACRO DEFINITIONS USING #DEFINE                    *
@@ -42,11 +43,15 @@ typedef enum{
  *                  FUNCTION PROTOTYPES WITH GLOBAL SCOPE                       *
  ******************************************************************************/
 
+void messageInit(void);
+
 bool messageHandlerStatus();
 
 messageEvent_t messageGetEvent();
 
 bool messageSetStatus(bool change_state);
+
+OS_SEM* getMessageSemPointer();
 
 /*******************************************************************************
  ******************************************************************************/

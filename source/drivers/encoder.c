@@ -48,6 +48,8 @@ static bool status;                         //Estado del encoder (para la FSM)
 static encoderEvent_t encoder_event;        //Eveneto del encoder
 static tim_id_t encoder_timer;              //timer
 
+//Semáforo del encoder
+static OS_SEM semEncoder;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -71,6 +73,10 @@ void initEncoder() {
 
     // Periodic Interuption ---> encoder_callback (1ms)
 	timerStart(encoder_timer, TIMER_MS2TICKS(ENCODER_TIME), TIM_MODE_PERIODIC, callback_encoder);
+
+	//Creamos el semaforo
+	OS_ERR os_err;
+	OSSemCreate(&semEncoder, "Sem Encoder", 0u, &os_err);
 }
 
 bool encoderGetStatus(){            // Si hay un evento, devolveme true, sino devolveme un false
@@ -92,6 +98,10 @@ bool encoderSetStatus(bool change_state){            // Setter para que la app m
 	return status;
 }
 
+
+OS_SEM* getEncoderSemPointer(){
+	return &semEncoder;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -103,6 +113,8 @@ static encoderEvent_t event_coming(bool A, bool B){         // FSM: check if the
 	static uint8_t current_state = START;
 
     encoderEvent_t turn = NONE_ENCODER;                             // Todavía no hay giro ni nada
+
+    OS_ERR os_err;
 
     // Veo si hubo cambió (flanco descendente o ascendente)
     switch(current_state){          // RECORDAR QUE ES ACTIVO BAJO!!!!
@@ -144,6 +156,8 @@ static encoderEvent_t event_coming(bool A, bool B){         // FSM: check if the
                     current_state = START;          // VOLVI A ESTAR EN 1. QUE LA PERILLA ESTA EN REPOSO, ENTONCES VUELVO AL INICIO
                     turn = LEFT;              // UNA VEZ QUE SE HIZO EL MOVIMIENTO COMPLETO, CONFIRMO QUE ES IZQUIERDA
                     status = true;
+
+                    OSSemPost(&semEncoder, OS_OPT_POST_1, &os_err);
                 } 
                 else if(A && !B){
                     // SIGUE EL MISMO ESTADO
@@ -181,6 +195,9 @@ static encoderEvent_t event_coming(bool A, bool B){         // FSM: check if the
                     current_state = START;
                     turn = RIGHT;         // UNA VEZ QUE SE HIZO EL MOVIMIENTO COMPLETO, CONFIRMO QUE ES DERECHA
                     status = true;
+
+                    OSSemPost(&semEncoder, OS_OPT_POST_1, &os_err);
+
                 } 
                 else if(!A && B){
                     // SIGUE EL MISMO ESTADO
