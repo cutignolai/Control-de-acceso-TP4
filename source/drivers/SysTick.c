@@ -43,7 +43,7 @@ void (*callback_ptr)(void);
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-__ISR__ SysTick_Handler(void);
+__ISR__ SysTick_Init1(void);
 
 
 /*******************************************************************************
@@ -78,7 +78,7 @@ bool SysTick_Init (void (*callback)(void))
 
 }
 
-__ISR__ SysTick_Handler(void)
+__ISR__ SysTick_Handler1(void)
 {	
     #ifdef SYSTICK_DEV_MODE
         gpioWrite(TEST_PIN, HIGH);
