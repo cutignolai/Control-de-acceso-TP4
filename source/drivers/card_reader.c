@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <os.h>
 #include "MK64F12.h"
 #include "gpio.h"
 #include "board.h"
@@ -66,6 +67,11 @@ static bool data_pin;
 static bool data_was_stored;
 static bool volatile enable_interrupt;
 static bool SS_arrived;
+
+
+/********************************* SEMAFORO **********************************/
+extern OS_Q periferal_event;
+extern OS_ERR os_err;
 
 /*******************************************************************************
  *         FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -208,7 +214,9 @@ static void readCard (void){		//CUANDO PASO LA TARJETA ENTRA MAS DE 200 VECES AC
         pin2data(data_pin, index);          //thus, it proceeds to read incomming data
     }
     else if (index == MAX_DATA){
-        data_was_stored = true;
+        //data_was_stored = true;
+        char msg = 'C';
+        OSQPost(&periferal_event, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
     }
     else{
         //do nothing

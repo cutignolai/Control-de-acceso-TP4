@@ -161,6 +161,7 @@ static uint8_t wrong_count;
 
 /* Example semaphore */
 static OS_SEM semTest;
+OS_Q periferal_event;
 
 static void Task2(void *p_arg) {
     (void)p_arg;
@@ -194,6 +195,9 @@ static void TaskStart(void *p_arg)
 	messageSetStatus(ACTIVADO);
 	resetReader();
 
+    //Queue created -> Hace falta crearla también en card reader? Creería que no, ahí solo postea
+    OSQCreate(&periferal_event, "Msg Queue", 16, &os_err);
+
 
 
 
@@ -201,7 +205,12 @@ static void TaskStart(void *p_arg)
         eventosDelMenu_t evento = EVENTO_NONE;
 
         // Analizo si hubo un evento
-        if(CardReaderIsReady())
+        void* q_msg;
+        OS_MSG_SIZE msg_size;
+
+        q_msg = OSQPend(&periferal_event, 0, OS_OPT_PEND_BLOCKING, &msg_size, NULL, &os_err);
+        char actual_event = *((char*)q_msg);
+        if(actual_event == 'C')
         {
             evento = EVENTO_TARJETA;
         }
