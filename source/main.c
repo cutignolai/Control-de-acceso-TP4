@@ -154,6 +154,7 @@ static uint8_t wrong_count;
 
 
 //---------------- SEMAFOROS -----------------
+#define AMMOUNT_OF_DATA    4
 
 // Encoder
 static OS_SEM semEnc;
@@ -169,6 +170,10 @@ static OS_SEM semCard;
 
 //--------------------------------------------
 
+
+/******************************************************************************
+ *                                 TASK NUBE                                  *
+ ******************************************************************************/
 static void TaskCloud(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
@@ -180,31 +185,52 @@ static void TaskCloud(void *p_arg) {
     }
 }
 
-
+/******************************************************************************
+ *                                 TASK MAIN                                  *
+ ******************************************************************************/
 static void TaskMain(void *p_arg) 
 {
     (void)p_arg;
     OS_ERR os_err;
 
-    /* Initialize the uC/CPU Services. */
+    /********************************************************
+     *              INICILIZACION (APP_INIT)                *
+     ********************************************************/
+    // Inicializo la CPU 
     CPU_Init();
+
+    // Inicializo el TP1
     timerInit();
 	initEncoder();
 	initButton();
 	initDisplay();
 	initLeds();
 	initCardReader();
-
 	sec_timer = timerGetId();
 	timerCreate(sec_timer, TIMER_MS2TICKS(SEC), TIM_MODE_PERIODIC, sec_callback);
-
 	messageSetStatus(ACTIVADO);
 	resetReader();
 
+    OS_PEND_DATA pend_data_table[AMMOUNT_OF_DATA];
+    OS_OBJ_QTY nbr_rdy;
 
 
 
-    while (1) {
+    /********************************************************
+     *              CORRO EL PROGRAMA (APP_RUN)             *
+     ********************************************************/
+    while (1) 
+    {
+        pend_data_table[0].PendObjPtr = (OS_PEND_OBJ *)semEnc;
+        pend_data_table[1].PendObjPtr = (OS_PEND_OBJ *)semClick;
+        pend_data_table[2].PendObjPtr = (OS_PEND_OBJ *)semDisp;
+        pend_data_table[3].PendObjPtr = (OS_PEND_OBJ *)semCard;
+        nbr_rdy = OSPendMulti(&pend_data_table[0],
+                                AMMOUNT_OF_DATA,
+                                0,
+                                OS_OPT_PEND_BLOCKING,
+                                &err);
+        
         eventosDelMenu_t evento = EVENTO_NONE;
 
         // Analizo si hubo un evento
@@ -260,6 +286,23 @@ static void TaskMain(void *p_arg)
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************************
+ *                                 COMIENZO                                   *
+ ******************************************************************************/
 int main(void) 
 {
     OS_ERR err;
@@ -312,11 +355,19 @@ int main(void)
 }
 
 
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
+
+
+
+
+
+
+/******************************************************************************              
+ *          A PARTIR DE ACA, EMPIEZAN FUNCIONES PROPIAS DEL TP1         |
+ *                                                                      |
+ *                                                                      |
+ *                                                                      |
+ *                                                                      V
+*******************************************************************************/
 
 static estadosDelMenu_t idle(eventosDelMenu_t evento)
 {
@@ -745,12 +796,6 @@ static estadosDelMenu_t wrong_pin()
 
 }
 
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
-
 static void reset_all (void)
 {
     // RESETEO ID
@@ -791,7 +836,6 @@ static void pass_reset(){
     posicion_pass = 0;
 }
 
-
 static void sec_callback(void){
     sec_count++;
     messageSetStatus(ACTIVADO);
@@ -818,13 +862,6 @@ static void show_message(digit_t *msg_ptr, uint8_t msg_len){
     loadBuffer(msg_ptr, msg_len);
     setScrollMode();
 } 
-
-// static void show_enter(digit_t *input_ptr, uint8_t input_len){
-
-// 	loadBuffer(input_ptr, input_len);
-//     showLastDigits(true);
-//     setStaticMode();
-// }
 
 static void show_pass(digit_t *pass_ptr, uint8_t pass_len){
 
