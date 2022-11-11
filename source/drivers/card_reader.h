@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include  <os.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -64,6 +65,8 @@ uint8_t* getData (void);
  * @return A pointer to an 8 unsigned ints array corresponding to the ID
  */
 uint8_t* processData (void);
+
+OS_SEM* getCardSemPointer(void);
 
 void printall(void);
 /*******************************************************************************

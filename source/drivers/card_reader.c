@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include  <os.h>
 #include "MK64F12.h"
 #include "gpio.h"
 #include "board.h"
@@ -84,7 +85,8 @@ static void validate_LRC(uint8_t new_char);
 static void add2track (uint8_t new_char);
 static void add2ID (uint8_t index, uint8_t new_char);
 
-
+//Semáforo del encoder
+static OS_SEM semCard;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -157,6 +159,11 @@ uint8_t* processData (void){
 }
 
 
+
+OS_SEM* getCardSemPointer(void)
+{
+	return &semCard;
+}
 /*******************************************************************************
  ******************************************************************************/
 
@@ -204,11 +211,14 @@ static void irq_clk_falling_edge () {
 static void readCard (void){		//CUANDO PASO LA TARJETA ENTRA MAS DE 200 VECES ACA
 
     data_pin = !gpioRead(PIN_CR_DATA);				//ACA ESTA EL PROBLEMA, CUANDO LEE NUNCA ES 0
+    OS_ERR os_err;
     if(index<MAX_DATA){
         pin2data(data_pin, index);          //thus, it proceeds to read incomming data
     }
     else if (index == MAX_DATA){
         data_was_stored = true;
+        OSSemPost(&semCard, OS_OPT_POST_1, &os_err);
+
     }
     else{
         //do nothing

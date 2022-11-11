@@ -44,6 +44,7 @@ typedef struct Users {
 
 bool checkUser(uint8_t id[], uint8_t pass[], uint8_t pass_len);
 void blockUser(uint8_t id[]);
+char getIDUser(uint8_t id[], uint8_t pass[], uint8_t pass_len);
 
 
 /*******************************************************************************

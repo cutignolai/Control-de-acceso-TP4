@@ -86,7 +86,7 @@ typedef enum{
 #define WRONG_TIME_1        5
 #define WRONG_TIME_2        30
 
-#define SEM_AMMOUNT			3
+#define SEM_AMMOUNT			4
 
 /*******************************************************************************
  * ENUMS AND STRUCTURES
@@ -142,6 +142,7 @@ static uint8_t wrong_count;
 
 // SEMAFOROS
 static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
+static OS_Q* queueSemPointer;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -149,7 +150,7 @@ static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
  ******************************************************************************/
 
 /* Función que se llama 1 vez, al comienzo del programa */
-void App_Init (void)
+void App_Init (OS_Q* queue)
 {
 	timerInit();
 	initEncoder();
@@ -167,10 +168,11 @@ void App_Init (void)
 	resetReader();
 
 	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) getEncoderSemPointer();
-	// sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
 	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getButtonSemPointer();
 	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) getMessageSemPointer();
+	sem_pend_table[3].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
 
+	queueSemPointer = queue;
 
 }
 
@@ -418,7 +420,9 @@ static estadosDelMenu_t modificar_id(eventosDelMenu_t evento)
                 {
                     id[i] = *(p+i);
                 }
+                //printall();
                 resetReader();
+
                 proximo_estado = ESTADO_PASS;
                 posicion_id = 0;
             }
@@ -598,6 +602,8 @@ static estadosDelMenu_t verificar_estado (void)
 {
     estadosDelMenu_t proximo_estado = ESTADO_ID;
     
+
+
     uint8_t id_char[MAX_UNIT_ID];
     for(int i = 0 ; i < MAX_UNIT_ID ; i++)
     {
@@ -613,6 +619,10 @@ static estadosDelMenu_t verificar_estado (void)
     if( checkUser(id_char, pass_char, posicion_pass + 1) )
     {
 		proximo_estado = ESTADO_OPEN;
+		OS_ERR os_err;
+		char msg = getIDUser(id_char, pass_char, posicion_pass + 1);
+		OSQPost(&queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
+
     } 
     else
     {

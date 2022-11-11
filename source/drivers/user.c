@@ -32,8 +32,14 @@ User_t all_users[] = {  {{0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0},    4},
                         {{0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 1}, 5},
                         {{1, 2, 3, 4, 0, 0, 0, 0}, {1, 1, 4, 4},    4},
                         {{3, 4, 8, 9, 0, 2, 2, 3}, {2, 3, 9, 1, 0}, 5},
-                        {{1, 2, 3, 4, 5, 6, 7, 8}, {1, 2, 3, 4},    4}  };
-uint16_t user_num = 5;
+                        {{1, 2, 3, 4, 5, 6, 7, 8}, {1, 2, 3, 4},    4},
+						{{2, 0, 6, 0, 2, 0, 9, 0}, {5, 9, 3, 3,0},    5}, 	// TARJETA CUTY
+						{{3, 0, 0, 0, 7, 0, 5, 0}, {5, 9, 5, 0,2},    5}, 	// TARJETA PEDRO
+						{{9, 0, 6, 0, 6, 0, 4, 0}, {1, 2, 3, 4},    4},   	// TARJETA STARBUCKS
+						{{3, 0, 4, 0, 9, 0, 5, 0}, {6, 0, 3, 5, 4},    5}, 	// TARJETA OLI
+						{{1, 0, 4, 0, 7, 0, 6, 0}, {6, 0, 0, 9, 7},    5},	// TARJETA MICHO (UALA)
+						{{6, 0, 6, 0, 3, 0, 6, 0}, {7, 4, 2, 6},    4}};	// TARJETA SANTANDER PEDRO
+uint16_t user_num = 11;
 
 
 /*******************************************************************************
@@ -73,6 +79,19 @@ bool checkUser(uint8_t id[], uint8_t pass[], uint8_t pass_len)
 
     return answer;
 
+}
+
+char getIDUser(uint8_t id[], uint8_t pass[], uint8_t pass_len)
+{
+	uint8_t i;
+	for(i = 0; i < user_num; i++)
+	{
+		if ( arr_eq(all_users[i].id, MAX_ID, id, MAX_ID) && arr_eq(all_users[i].pass, all_users[i].len, pass, pass_len) )
+		{
+			return (char)(i);
+		}
+	}
+	return (char)(-1);
 }
 
 void blockUser(uint8_t id[]){
