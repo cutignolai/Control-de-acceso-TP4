@@ -27,6 +27,8 @@ static CPU_STK TASK_CLOUDStk[TASK_CLOUD_STK_SIZE];
 void App_Init (OS_Q* queue);
 void App_Run (void);
 
+OS_SEM* getSWSem();
+
 static OS_Q msgqTest;
 /******************************************************************************
  *                                 TASK NUBE                                  *
@@ -49,6 +51,9 @@ static void TaskCloud(void *p_arg) {
 			case '6': LED_G_TOGGLE(); break;
 			case '7': LED_B_TOGGLE(); break;
 		}
+
+        OS_ERR os_err;
+        OSSemPost(getSWSem(), OS_OPT_POST_1, &os_err);
 	}
 }
 

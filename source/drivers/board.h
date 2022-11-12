@@ -28,7 +28,10 @@
 #define LED_ACTIVE      LOW
 
 // PINES DIGITALES
+#define SW_2         	PORTNUM2PIN(PC,6) // PTC0
+#define SW_3         	PORTNUM2PIN(PA,4) // PTC0
 
+#define SW_ACTIVE       HIGH
 // KINETIS
 #define PTA0			PORTNUM2PIN(PA, 0)
 #define PTA1			PORTNUM2PIN(PA, 1)

@@ -86,7 +86,7 @@ typedef enum{
 #define WRONG_TIME_1        5
 #define WRONG_TIME_2        30
 
-#define SEM_AMMOUNT			4
+#define SEM_AMMOUNT			5
 
 /*******************************************************************************
  * ENUMS AND STRUCTURES
@@ -115,6 +115,9 @@ static void show_brightness();
 static void id_reset();
 static void pass_reset();
 
+
+//Test
+static void irq_sw2 (void);
 /*******************************************************************************
  * VARIABLES
  ******************************************************************************/
@@ -143,6 +146,13 @@ static uint8_t wrong_count;
 // SEMAFOROS
 static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
 static OS_Q* queueSemPointer;
+
+//Test
+static OS_SEM semSwitch;
+static bool sw_pushed = false;
+static uint8_t dat_id[] = {3, 0, 0, 0, 7, 0, 5, 0};
+static uint8_t dat_pass[] = {5, 9, 5, 0,2};
+int x;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -171,8 +181,14 @@ void App_Init (OS_Q* queue)
 	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getButtonSemPointer();
 	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) getMessageSemPointer();
 	sem_pend_table[3].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
+    sem_pend_table[4].PendObjPtr = (OS_PEND_OBJ*) (&semSwitch);
+    
 
 	queueSemPointer = queue;
+
+    //Test
+    gpioMode(SW_2, INPUT);
+    gpioIRQ(SW_2, GPIO_IRQ_MODE_FALLING_EDGE, irq_sw2);
 
 }
 
@@ -208,6 +224,11 @@ void App_Run (void)
 		evento = messageGetEvent();
 		messageSetStatus(DESACTIVADO);
 	}
+    //Test
+    else if(sw_pushed){
+        sw_pushed = false;
+        evento = EVENTO_TARJETA;
+    }
 
 	// Si hubo un evento, veo en que estado de mi FSM estoy y le envio el evento
 	if(evento != EVENTO_NONE)
@@ -413,7 +434,7 @@ static estadosDelMenu_t modificar_id(eventosDelMenu_t evento)
             
 
         case EVENTO_TARJETA:
-            p = processData();
+            /*p = processData();
             if (getError() == NO_ERROR){
                 uint8_t i;
                 for (i=0; i<8; i++)
@@ -430,7 +451,20 @@ static estadosDelMenu_t modificar_id(eventosDelMenu_t evento)
                 reset_all();
                 proximo_estado = ESTADO_INIT;
             }
-			messageSetStatus(ACTIVADO);
+			messageSetStatus(ACTIVADO);*/
+
+        	for (x=0; x<8; x++)
+			{
+				id[x] = dat_id[x];
+			}
+        	for (x=0; x<5; x++)
+			{
+				pass[x] = dat_pass[x];
+			}
+        	posicion_id = 0;
+        	posicion_pass = 4;
+        	proximo_estado = ESTADO_PASS;
+
             break;
 
         case EVENTO_MSG:
@@ -543,8 +577,10 @@ static estadosDelMenu_t modificar_pass(eventosDelMenu_t evento)
         	break;
 
         case EVENTO_TARJETA:
-            reset_all();
-            proximo_estado = ESTADO_INIT;
+            //reset_all();
+            //proximo_estado = ESTADO_INIT;
+        	proximo_estado = ESTADO_VERIFICAR;
+        	user_is_ready = READY;
             //messageSetStatus(ACTIVADO); 
             break;
     
@@ -621,7 +657,8 @@ static estadosDelMenu_t verificar_estado (void)
 		proximo_estado = ESTADO_OPEN;
 		OS_ERR os_err;
 		char msg = getIDUser(id_char, pass_char, posicion_pass + 1);
-		OSQPost(&queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
+		OSQPost(queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
+		OSTimeDlyHMSM(0u, 0u, 2, 0, OS_OPT_TIME_HMSM_STRICT, &os_err);
 
     } 
     else
@@ -818,4 +855,14 @@ static void show_brightness(){
 
 /*******************************************************************************
  ******************************************************************************/
+
+static void irq_sw2 (void){
+    sw_pushed = true;
+	OS_ERR os_err;
+    OSSemPost(&semSwitch, OS_OPT_POST_1, &os_err);           //boton accionado = evento e encoder/tarjeta
+}
+
+OS_SEM* getSWSem(){
+    return &semSwitch;
+}
 
