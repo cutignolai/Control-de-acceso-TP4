@@ -141,12 +141,19 @@ void timerRestart(tim_id_t id){
     timers[id].running = 1;
 }
 
-// Expira el timer y lo hace llegar a cero
+// Expira el timer y lo hace llegar a cero para luego apagarlo
 void timerFinish(tim_id_t id){
     timers[id].running = 0;
     timers[id].expired = 1;
     timers[id].cnt = 0;
     timers[id].callback();
+}
+
+// Expira el timer sin apagarlo
+void timerExec(tim_id_t id){
+	timers[id].running = 1;
+    timers[id].expired = 1;
+    timers[id].cnt = 1;
 }
 
 // Resetea un timer apagado

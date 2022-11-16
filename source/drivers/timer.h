@@ -100,10 +100,17 @@ void timerPlay(tim_id_t id);
 void timerRestart(tim_id_t id);
 
 /**
- * @brief Finish to run a timer
+ * @brief Finish to run a timer and deactivate it
  * @param id ID of the timer to end
  */
 void timerFinish(tim_id_t id);
+
+/**
+ * @brief Finish to run a timer without deactivating it
+ * 
+ * @param id ID of the timer to execute
+ */
+void timerExec(tim_id_t id);
 
 /**
  * @brief Reset a timer to before it was running, deactivated

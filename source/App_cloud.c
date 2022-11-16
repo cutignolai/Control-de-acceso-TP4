@@ -26,7 +26,7 @@
 #define RX_LENGTH	5
 
 #define KEEPALIVE_MS	1000
-#define DATA_MS			15500
+#define DATA_MS			16000
 
 #define PISO1_IDX		6
 #define PISO2_IDX		8
@@ -87,7 +87,7 @@ void App_Init (void)
 	data_timer = timerGetId();
 	timerStart(keepalive_timer, TIMER_MS2TICKS(KEEPALIVE_MS), TIM_MODE_PERIODIC, &KeepAlive_IRQ);
 	timerStart(data_timer, TIMER_MS2TICKS(DATA_MS), TIM_MODE_PERIODIC, &Data_IRQ);
-
+	timerExec(data_timer);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
