@@ -76,6 +76,7 @@ bool messageSetStatus(bool change_state){            //Setter para que la app me
 	return status;
 }
 
+
 OS_SEM* getMessageSemPointer()
 {
 	return &semMsg;

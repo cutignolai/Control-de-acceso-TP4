@@ -143,6 +143,9 @@ static uint8_t wrong_count;
 // SEMAFOROS
 static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
 static OS_Q* queueSemPointer;
+
+static char msgCloud;
+static bool sendCloud = false;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -161,18 +164,22 @@ void App_Init (OS_Q* queue)
 
 	messageInit();
 
+
 	sec_timer = timerGetId();
 	timerCreate(sec_timer, TIMER_MS2TICKS(SEC), TIM_MODE_PERIODIC, sec_callback);
 
-	messageSetStatus(ACTIVADO);
 	resetReader();
+
 
 	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) getEncoderSemPointer();
 	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getButtonSemPointer();
 	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) getMessageSemPointer();
 	sem_pend_table[3].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
 
+
 	queueSemPointer = queue;
+
+	messageSetStatus(ACTIVADO);
 
 }
 
@@ -182,6 +189,7 @@ void App_Run (void)
 	OS_ERR os_err;
 
 	eventosDelMenu_t evento = EVENTO_NONE;
+
 
 	OSPendMulti(&sem_pend_table[0], SEM_AMMOUNT, 0, OS_OPT_PEND_BLOCKING, &os_err);
 
@@ -269,6 +277,7 @@ static estadosDelMenu_t idle(eventosDelMenu_t evento)
             proximo_estado = ESTADO_ID;
             messageSetStatus(ACTIVADO);
 
+
             break;
 
         case EVENTO_CLICK_2:
@@ -319,6 +328,14 @@ static estadosDelMenu_t modificar_id(eventosDelMenu_t evento)
     digit_t msg[] = {IDX_U, IDX_S, IDX_e, IDX_r};
     uint8_t *p;
     clear_leds();
+
+    if(sendCloud == true)
+    {
+    	sendCloud = false;
+        OS_ERR os_err;
+    	OSQPost(queueSemPointer, (void*)(&msgCloud), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
+
+    }
 
     switch(evento)
     {
@@ -618,10 +635,9 @@ static estadosDelMenu_t verificar_estado (void)
 
     if( checkUser(id_char, pass_char, posicion_pass + 1) )
     {
+    	msgCloud = getIDUser(id_char, pass_char, posicion_pass + 1);
 		proximo_estado = ESTADO_OPEN;
-		OS_ERR os_err;
-		char msg = getIDUser(id_char, pass_char, posicion_pass + 1);
-		OSQPost(&queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
+		sendCloud = true;
 
     } 
     else

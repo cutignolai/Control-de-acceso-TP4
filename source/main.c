@@ -42,13 +42,19 @@ static void TaskCloud(void *p_arg) {
 		int i = 0;
 		p_msg = OSQPend(&msgqTest, 0, OS_OPT_PEND_BLOCKING, &msg_size, NULL, &os_err);
 
-
-		switch(*((char*)p_msg))
+		/*
+		char ID = ((char*)p_msg)[0];
+		switch(ID)
 		{
-			case '5': LED_R_TOGGLE(); break;
-			case '6': LED_G_TOGGLE(); break;
-			case '7': LED_B_TOGGLE(); break;
+			case 5:
+				LED_R_TOGGLE();
+				break;
+			case 6: LED_G_TOGGLE(); break;
+			case 7: LED_B_TOGGLE(); break;
 		}
+		*/
+
+		//App_run_cloud();
 	}
 }
 

@@ -101,6 +101,9 @@ void initCardReader(void){
 #ifdef CARD_DEV_MODE
 	gpioMode(CARD_TEST_PIN, OUTPUT);
 #endif
+	OS_ERR os_err;
+	OSSemCreate(&semCard, "Sem Card", 0u, &os_err);
+
 }
 
 void resetReader (void){
