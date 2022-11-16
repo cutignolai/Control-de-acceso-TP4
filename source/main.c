@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-
+static OS_ERR os_err_q;
 /********************************************************************************************************
  *                          CONSTANT AND MACRO DEFINITIONS USING #DEFINE                                *
  ********************************************************************************************************/
@@ -19,7 +19,7 @@ static CPU_STK TaskMainStk[TASK_MAIN_STK_SIZE];
 //-------------- TASK NUBE ----------------
 #define TASK_CLOUD_STK_SIZE			256u
 #define TASK_CLOUD_STK_SIZE_LIMIT	(TASK_CLOUD_STK_SIZE / 10u)
-#define TASK_CLOUD_PRIO              2u
+#define TASK_CLOUD_PRIO              3u
 static OS_TCB TASK_CLOUDTCB;
 static CPU_STK TASK_CLOUDStk[TASK_CLOUD_STK_SIZE];
 //-----------------------------------------
@@ -35,25 +35,28 @@ static OS_Q msgqTest;
  ******************************************************************************/
 static void TaskCloud(void *p_arg) {
     (void)p_arg;
-    OS_ERR os_err;
+
 
     void* p_msg;
 	OS_MSG_SIZE msg_size;
 
 	while (1) {
 		int i = 0;
-		p_msg = OSQPend(&msgqTest, 0, OS_OPT_PEND_BLOCKING, &msg_size, NULL, &os_err);
+		p_msg = OSQPend(&msgqTest, 0, OS_OPT_PEND_BLOCKING, &msg_size, NULL, &os_err_q);
+
+		char c = *((char*)p_msg);
 
 
-		switch(*((char*)p_msg))
+		switch(c)
 		{
 			case '5': LED_R_TOGGLE(); break;
 			case '6': LED_G_TOGGLE(); break;
 			case '7': LED_B_TOGGLE(); break;
 		}
 
-        OS_ERR os_err;
-        OSSemPost(getSWSem(), OS_OPT_POST_1, &os_err);
+        //OS_ERR os_err;
+
+        //OSSemPost(getSWSem(), OS_OPT_POST_1, &os_err);
 	}
 }
 
@@ -72,7 +75,7 @@ static void TaskMain(void *p_arg)
     CPU_Init();
 
     // Creo el semaforo
-	OSQCreate(&msgqTest, "Msg Q Test", 16, &os_err);
+	OSQCreate(&msgqTest, "Msg Q Test", 32, &os_err);
 
 	hw_DisableInterrupts();
 	App_Init(&msgqTest);

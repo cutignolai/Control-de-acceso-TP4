@@ -71,8 +71,8 @@ messageEvent_t messageGetEvent(){
 
 bool messageSetStatus(bool change_state){            //Setter para que la app me lo pueda cambiar
 	status = change_state;
-	OS_ERR os_err;
-	OSSemPost(&semMsg, OS_OPT_POST_1, &os_err);
+	//OS_ERR os_err;
+	//OSSemPost(&semMsg, OS_OPT_POST_1, &os_err);
 	return status;
 }
 

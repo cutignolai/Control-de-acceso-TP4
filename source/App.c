@@ -86,13 +86,14 @@ typedef enum{
 #define WRONG_TIME_1        5
 #define WRONG_TIME_2        30
 
-#define SEM_AMMOUNT			5
+#define SEM_AMMOUNT			4
 
 /*******************************************************************************
  * ENUMS AND STRUCTURES
  ******************************************************************************/
 
-
+static OS_ERR os_err_q;
+static OS_ERR os_err_dly;
 
 
 /*******************************************************************************
@@ -152,6 +153,8 @@ static OS_SEM semSwitch;
 static bool sw_pushed = false;
 static uint8_t dat_id[] = {3, 0, 0, 0, 7, 0, 5, 0};
 static uint8_t dat_pass[] = {5, 9, 5, 0,2};
+static bool allowed = false;
+static char id_q;
 int x;
 /*******************************************************************************
  *******************************************************************************
@@ -179,9 +182,9 @@ void App_Init (OS_Q* queue)
 
 	sem_pend_table[0].PendObjPtr = (OS_PEND_OBJ*) getEncoderSemPointer();
 	sem_pend_table[1].PendObjPtr = (OS_PEND_OBJ*) getButtonSemPointer();
-	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) getMessageSemPointer();
+	sem_pend_table[2].PendObjPtr = (OS_PEND_OBJ*) (&semSwitch); //(OS_PEND_OBJ*) getMessageSemPointer();
 	sem_pend_table[3].PendObjPtr = (OS_PEND_OBJ*) getCardSemPointer();
-    sem_pend_table[4].PendObjPtr = (OS_PEND_OBJ*) (&semSwitch);
+    //sem_pend_table[4].PendObjPtr = 
     
 
 	queueSemPointer = queue;
@@ -201,6 +204,8 @@ void App_Run (void)
 
 	OSPendMulti(&sem_pend_table[0], SEM_AMMOUNT, 0, OS_OPT_PEND_BLOCKING, &os_err);
 
+
+
 	// NO VA A AVANZAR HASTA QUE NO HAYA ALUN SEMAFORO ACTIVADO
 
 	// Analizo si hubo un evento
@@ -216,8 +221,9 @@ void App_Run (void)
 	}
 	else if(buttonGetStatus())
 	{
-		evento = buttonGetEvent();
+		//evento = buttonGetEvent();
 		buttonSetStatus(DESACTIVADO);
+		evento = EVENTO_TARJETA;
 	}
 	else if(messageHandlerStatus())
 	{
@@ -655,10 +661,9 @@ static estadosDelMenu_t verificar_estado (void)
     if( checkUser(id_char, pass_char, posicion_pass + 1) )
     {
 		proximo_estado = ESTADO_OPEN;
-		OS_ERR os_err;
-		char msg = getIDUser(id_char, pass_char, posicion_pass + 1);
-		OSQPost(queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err);
-		OSTimeDlyHMSM(0u, 0u, 2, 0, OS_OPT_TIME_HMSM_STRICT, &os_err);
+		id_q = getIDUser(id_char, pass_char, posicion_pass + 1);
+		allowed = true;
+		//OSTimeDlyHMSM(0u, 0u, 2, 0, OS_OPT_TIME_HMSM_STRICT, &os_err_dly);
 
     } 
     else
@@ -689,6 +694,12 @@ static estadosDelMenu_t open_door(void)
         reset_all();
         proximo_estado = ESTADO_INIT;
         messageSetStatus(ACTIVADO);
+    }  
+    if (allowed){
+        char msg = '0' + id_q;
+        OSQPost(queueSemPointer, (void*)(&msg), sizeof(void*), OS_OPT_POST_FIFO, &os_err_q);
+        //OSTimeDlyHMSM(0u, 0u, 2, 0, OS_OPT_TIME_HMSM_STRICT, &os_err_dly);
+        allowed = false;
     }
 
     return proximo_estado;

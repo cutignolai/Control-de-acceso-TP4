@@ -17,7 +17,7 @@
  *                 CONSTANT AND MACRO DEFINITIONS USING #DEFINE                 *
  ******************************************************************************/
 
-#define PIN_C   DIO_10
+#define PIN_C   SW_3        //DIO_10
 #define ON      LOW         //Activo bajo ---> Prendido
 #define OFF     HIGH        //Activo bajo ---> Apagado
 #ifdef BUTTON_DEV_MODE
