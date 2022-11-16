@@ -8,7 +8,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include <stdio.h>
-#include  <os.h>
+#include <os.h>
 #include <string.h>
 #include <drivers/board.h>
 #include <drivers/gpio.h>

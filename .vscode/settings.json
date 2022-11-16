@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "hardware.h": "c",
-        "core_cm4.h": "c"
-    }
+		"hardware.h": "c",
+		"core_cm4.h": "c",
+		"gpio.h": "c"
+	}
 }

@@ -20,14 +20,12 @@
 
 /***** BOARD defines **********************************************************/
 
-// On Board User LEDs
+// // On Board User LEDs
 
-#define PIN_LED_RED     PORTNUM2PIN(PB, 22)	  // PTB22
-#define PIN_LED_GREEN   PORTNUM2PIN(PE, 26)	  // PTE26
-#define PIN_LED_BLUE    PORTNUM2PIN(PB, 21)	  // PTB21
-#define LED_ACTIVE      LOW
-
-// PINES DIGITALES
+// #define PIN_LED_RED     PORTNUM2PIN(PB, 22)	  // PTB22
+// #define PIN_LED_GREEN   PORTNUM2PIN(PE, 26)	  // PTE26
+// #define PIN_LED_BLUE    PORTNUM2PIN(PB, 21)	  // PTB21
+// #define LED_ACTIVE      LOW
 
 // KINETIS
 #define PTA0			PORTNUM2PIN(PA, 0)
@@ -63,25 +61,25 @@
 #define PTE25			PORTNUM2PIN(PE, 25)
 #define PTE26			PORTNUM2PIN(PE, 26)
 
-// LEDS
-#define LED_R_PORT            PORTB
-#define LED_R_GPIO            GPIOB
-#define LED_G_PORT            PORTE
-#define LED_G_GPIO            GPIOE
-#define LED_B_PORT            PORTB
-#define LED_B_GPIO            GPIOB
-#define LED_R_PIN             22
-#define LED_G_PIN             26
-#define LED_B_PIN             21
-#define LED_B_ON()           (LED_B_GPIO->PCOR |= (1 << LED_B_PIN))
-#define LED_B_OFF()          (LED_B_GPIO->PSOR |= (1 << LED_B_PIN))
-#define LED_B_TOGGLE()       (LED_B_GPIO->PTOR |= (1 << LED_B_PIN))
-#define LED_G_ON()           (LED_G_GPIO->PCOR |= (1 << LED_G_PIN))
-#define LED_G_OFF()          (LED_G_GPIO->PSOR |= (1 << LED_G_PIN))
-#define LED_G_TOGGLE()       (LED_G_GPIO->PTOR |= (1 << LED_G_PIN))
-#define LED_R_ON()           (LED_R_GPIO->PCOR |= (1 << LED_R_PIN))
-#define LED_R_OFF()          (LED_R_GPIO->PSOR |= (1 << LED_R_PIN))
-#define LED_R_TOGGLE()       (LED_R_GPIO->PTOR |= (1 << LED_R_PIN))
+// // LEDS
+// #define LED_R_PORT            PORTB
+// #define LED_R_GPIO            GPIOB
+// #define LED_G_PORT            PORTE
+// #define LED_G_GPIO            GPIOE
+// #define LED_B_PORT            PORTB
+// #define LED_B_GPIO            GPIOB
+// #define LED_R_PIN             22
+// #define LED_G_PIN             26
+// #define LED_B_PIN             21
+// #define LED_B_ON()           (LED_B_GPIO->PCOR |= (1 << LED_B_PIN))
+// #define LED_B_OFF()          (LED_B_GPIO->PSOR |= (1 << LED_B_PIN))
+// #define LED_B_TOGGLE()       (LED_B_GPIO->PTOR |= (1 << LED_B_PIN))
+// #define LED_G_ON()           (LED_G_GPIO->PCOR |= (1 << LED_G_PIN))
+// #define LED_G_OFF()          (LED_G_GPIO->PSOR |= (1 << LED_G_PIN))
+// #define LED_G_TOGGLE()       (LED_G_GPIO->PTOR |= (1 << LED_G_PIN))
+// #define LED_R_ON()           (LED_R_GPIO->PCOR |= (1 << LED_R_PIN))
+// #define LED_R_OFF()          (LED_R_GPIO->PSOR |= (1 << LED_R_PIN))
+// #define LED_R_TOGGLE()       (LED_R_GPIO->PTOR |= (1 << LED_R_PIN))
 
 /*******************************************************************************
  ******************************************************************************/
