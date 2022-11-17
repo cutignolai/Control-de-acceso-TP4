@@ -1,6 +1,6 @@
 #include "hardware.h"
 #include <drivers/board.h>
-#include  <os.h>
+#include <os.h>
 #include <stdio.h>
 #include <string.h>
 

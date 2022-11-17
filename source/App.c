@@ -183,7 +183,6 @@ void App_Init (OS_Q* queue)
 
 }
 
-/* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
 	OS_ERR os_err;
@@ -635,10 +634,9 @@ static estadosDelMenu_t verificar_estado (void)
 
     if( checkUser(id_char, pass_char, posicion_pass + 1) )
     {
-    	msgCloud = getIDUser(id_char, pass_char, posicion_pass + 1);
+    	msgCloud = getUserIndex(id_char, pass_char, posicion_pass + 1);
 		proximo_estado = ESTADO_OPEN;
 		sendCloud = true;
-
     } 
     else
     {

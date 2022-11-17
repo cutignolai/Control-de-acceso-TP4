@@ -26,11 +26,15 @@
 /*******************************************************************************
  *               ENUMERATIONS AND STRUCTURES AND TYPEDEFS                       *
  ******************************************************************************/
-typedef struct Users {
-	uint8_t id[MAX_ID];
-	uint8_t pass[MAX_PASS];
+typedef struct {
+	uint8_t index;
+	uint8_t	id[MAX_ID];
+	uint8_t	pass[MAX_PASS];
 	uint8_t len;
-} User_t;
+	uint8_t	floor;
+	bool	is_inside;
+	bool	is_blocked;
+} user_t;
 
 /*******************************************************************************
  *                  VARIABLE PROTOTYPES WITH GLOBAL SCOPE                       *
@@ -44,8 +48,9 @@ typedef struct Users {
 
 bool checkUser(uint8_t id[], uint8_t pass[], uint8_t pass_len);
 void blockUser(uint8_t id[]);
-char getIDUser(uint8_t id[], uint8_t pass[], uint8_t pass_len);
-
+uint8_t getUserIndex(uint8_t id[], uint8_t pass[], uint8_t pass_len);
+bool changeUserState(uint8_t index);
+uint8_t getFloorCount(uint8_t floor);
 
 /*******************************************************************************
  ******************************************************************************/

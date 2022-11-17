@@ -1,1 +1,4 @@
 /Debug/
+ucosiii_test_project Debug.launch
+ucosiii_test_project PE Debug.launch
+ucosiii_test_project PE Release.launch

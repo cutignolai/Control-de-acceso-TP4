@@ -40,6 +40,7 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static rgb_t rgb;
+static bool is_init;
 
 /*******************************************************************************
  *******************************************************************************
@@ -49,13 +50,18 @@ static rgb_t rgb;
 
 void LedInit(){
 
-	gpioMode(PIN_LED_RED, OUTPUT);
-	rgb.red = true;
-	gpioMode(PIN_LED_GREEN, OUTPUT);
-	rgb.green = true;
-	gpioMode(PIN_LED_BLUE, OUTPUT);
-	rgb.blue = true;
-	LedOff();
+	if (!is_init){
+
+		gpioMode(PIN_LED_RED, OUTPUT);
+		rgb.red = true;
+		gpioMode(PIN_LED_GREEN, OUTPUT);
+		rgb.green = true;
+		gpioMode(PIN_LED_BLUE, OUTPUT);
+		rgb.blue = true;
+		LedOff();
+		
+		is_init = true;
+	}
 	
 }
 

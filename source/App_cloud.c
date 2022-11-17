@@ -9,9 +9,10 @@
  ******************************************************************************/
 
 #include <stdint.h>
-#include "uart.h"
-#include "timer.h"
-#include "led.h"
+#include <drivers/uart.h>
+#include <drivers/timer.h>
+#include <drivers/led.h>
+#include <drivers/user.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -54,9 +55,9 @@ static uint8_t keepalive_msg[] = {0xAA, 0x55, 0xC3, 0x3C, 0x01, 0x02};
 // static uint8_t keepalive_msg[] = {'A', '5', '3', '5', '1', '2'};
 static uint8_t data_msg[] = {0xAA, 0x55, 0xC3, 0x3C, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 // static uint8_t data_msg[] = {'A', '5', '3', '5', '7', '1', '0', '0', '0', '0', '0', '0'};
-static uint16_t piso1 = 10;
-static uint16_t piso2 = 20;
-static uint16_t piso3 = 30;
+// static uint16_t piso1 = 0;
+// static uint16_t piso2 = 0;
+// static uint16_t piso3 = 0;
 
 static tim_id_t keepalive_timer;
 static tim_id_t data_timer;
@@ -71,7 +72,7 @@ static bool data_flag = false;
  ******************************************************************************/
 
 /* Función que se llama 1 vez, al comienzo del programa */
-void App_Init (void)
+void App_Init_cloud (void)
 {
     // Inicializo UART
 	uart_cfg_t config;
@@ -91,7 +92,7 @@ void App_Init (void)
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void)
+void App_Run_cloud (void)
 {
 
 }
@@ -103,6 +104,10 @@ void App_Run (void)
  ******************************************************************************/
 
 void SendData(){
+
+	uint16_t piso1 = getFloorCount(1);
+	uint16_t piso2 = 0;
+	uint16_t piso3 = 0;
 
 	data_msg[PISO1_IDX] = GET_LSBYTE(piso1);
 	data_msg[PISO1_IDX + 1] = GET_MSBYTE(piso1);
