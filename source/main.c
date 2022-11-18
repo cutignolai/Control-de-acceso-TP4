@@ -68,7 +68,7 @@ static void Task2(void *p_arg) {
     char msg = 'B';
 
     while (1) {
-    	LED_B_TOGGLE();
+    	
     	OSTimeDlyHMSM(0u, 0u, 0u, 1, OS_OPT_TIME_HMSM_STRICT, &os_err);
         LED_G_TOGGLE();
     }
@@ -173,8 +173,3 @@ int main(void) {
 
     }
 }
-
-
-/*******************************************************************************
- ******************************************************************************/
-
