@@ -144,7 +144,7 @@ static uint8_t wrong_count;
 static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
 static OS_Q* queueSemPointer;
 
-static share_user_t* msgCloud;
+static uint8_t msgCloud;
 static bool sendCloud = false;
 /*******************************************************************************
  *******************************************************************************
@@ -164,6 +164,7 @@ void App_Init (OS_Q* queue)
 
 	messageInit();
 
+	loadDatabase();
 
 	sec_timer = timerGetId();
 	timerCreate(sec_timer, TIMER_MS2TICKS(SEC), TIM_MODE_PERIODIC, sec_callback);
@@ -634,7 +635,7 @@ static estadosDelMenu_t verificar_estado (void)
     {
 		uint16_t index = getUserIndex(id_char);
 		changeUserState(index);
-    	msgCloud = shareUser(index);
+    	msgCloud = index;
 		proximo_estado = ESTADO_OPEN;
 		sendCloud = true;
     } 

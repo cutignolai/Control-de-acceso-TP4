@@ -13,7 +13,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "user.h"
 
 /*******************************************************************************
  *          CONSTANT AND MACRO DEFINITIONS USING #DEFINE                        *
@@ -30,7 +29,8 @@
  *                  VARIABLE PROTOTYPES WITH GLOBAL SCOPE                       *
  ******************************************************************************/
 
-bool newEntry(share_user_t* user);
+void loadDataBase();
+bool newEntry(uint8_t index);
 uint16_t getFloorCount(uint8_t floor);
 
 /*******************************************************************************

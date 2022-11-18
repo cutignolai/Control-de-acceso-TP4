@@ -82,6 +82,9 @@ void App_Init_cloud (void)
 	// Inicializo LED
 	LedInit();
 
+	// Cargo usuarios
+	loadDataBase();
+
 	// Inicializo timers
 	timerInit();
 	keepalive_timer = timerGetId();
