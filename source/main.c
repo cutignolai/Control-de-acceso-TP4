@@ -24,6 +24,24 @@ static OS_TCB TASK_CLOUDTCB;
 static CPU_STK TASK_CLOUDStk[TASK_CLOUD_STK_SIZE];
 //-----------------------------------------
 
+//-------------- TASK ALIVE ----------------
+#define TASK_ALIVE_STK_SIZE			256u
+#define TASK_ALIVE_STK_SIZE_LIMIT	(TASK_ALIVE_STK_SIZE / 10u)
+#define TASK_ALIVE_PRIO              2u
+static OS_TCB TASK_ALIVETCB;
+static CPU_STK TASK_ALIVEStk[TASK_ALIVE_STK_SIZE];
+//-----------------------------------------
+
+//-------------- TASK REFRESH ----------------
+#define TASK_REFRESH_STK_SIZE			256u
+#define TASK_REFRESH_STK_SIZE_LIMIT	(TASK_REFRESH_STK_SIZE / 10u)
+#define TASK_REFRESH_PRIO              2u
+static OS_TCB TASK_REFRESHTCB;
+static CPU_STK TASK_REFRESHStk[TASK_REFRESH_STK_SIZE];
+//-----------------------------------------
+
+
+
 void App_Init (OS_Q* queue);
 void App_Run (void);
 
@@ -35,28 +53,45 @@ static void TaskCloud(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
 
+ 	while (1) {
+		OSTimeDlyHMSM(0u, 0u, 15, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+		//sendCloud()
+	}
+}
+
+
+/******************************************************************************
+ *                                 TASK ALIVE                                 *
+ ******************************************************************************/
+static void TaskLive(void *p_arg) {
+    (void)p_arg;
+    OS_ERR os_err;
+
+
+	while (1) {
+		OSTimeDlyHMSM(0u, 0u, 15, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+		//KeepAlive()
+	}
+}
+
+/******************************************************************************
+ *                                 TASK ALIVE                                 *
+ ******************************************************************************/
+static void TaskRefreh(void *p_arg) {
+    (void)p_arg;
+    OS_ERR os_err;
+
     void* p_msg;
 	OS_MSG_SIZE msg_size;
 
 	while (1) {
-		int i = 0;
 		p_msg = OSQPend(&msgqTest, 0, OS_OPT_PEND_BLOCKING, &msg_size, NULL, &os_err);
-
-		/*
-		char ID = ((char*)p_msg)[0];
-		switch(ID)
-		{
-			case 5:
-				LED_R_TOGGLE();
-				break;
-			case 6: LED_G_TOGGLE(); break;
-			case 7: LED_B_TOGGLE(); break;
-		}
-		*/
-
-		//App_run_cloud();
+		//ActualizarPiso(p_msg);
 	}
 }
+
+
+
 
 /******************************************************************************
  *                                 TASK MAIN                                  *
@@ -79,20 +114,51 @@ static void TaskMain(void *p_arg)
 	App_Init(&msgqTest);
 	hw_EnableInterrupts();
 
-	// Creo el Task Cloud
-	OSTaskCreate(&TASK_CLOUDTCB, 			//tcb
-				 "Task Cloud",				//name
-				 TaskCloud,				//func
-				  0u,					//arg
-				  TASK_CLOUD_PRIO,			//prio
-				 &TASK_CLOUDStk[0u],			//stack
-				 TASK_CLOUD_STK_SIZE_LIMIT,	//stack limit
-				 TASK_CLOUD_STK_SIZE,		//stack size
-				  0u,
-				  0u,
-				  0u,
-				 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-				 &os_err);
+	// Creo el Task Reresh
+		OSTaskCreate(&TASK_REFRESHTCB, 			//tcb
+					 "Task Refresh",				//name
+					 TaskRefreh,				//func
+					  0u,					//arg
+					  TASK_REFRESH_PRIO,			//prio
+					 &TASK_REFRESHStk[0u],			//stack
+					 TASK_REFRESH_STK_SIZE_LIMIT,	//stack limit
+					 TASK_REFRESH_STK_SIZE,		//stack size
+					  0u,
+					  0u,
+					  0u,
+					 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+					 &os_err);
+
+		// Creo el Task Keep Alive
+			OSTaskCreate(&TASK_ALIVETCB, 			//tcb
+						 "Task Live",				//name
+						 TaskLive,				//func
+						  0u,					//arg
+						  TASK_ALIVE_PRIO,			//prio
+						 &TASK_ALIVEStk[0u],			//stack
+						 TASK_ALIVE_STK_SIZE_LIMIT,	//stack limit
+						 TASK_ALIVE_STK_SIZE,		//stack size
+						  0u,
+						  0u,
+						  0u,
+						 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+						 &os_err);
+
+		// Creo el Task Cloud
+			OSTaskCreate(&TASK_CLOUDTCB, 			//tcb
+						 "Task Cloud",				//name
+						 TaskCloud,				//func
+						  0u,					//arg
+						  TASK_CLOUD_PRIO,			//prio
+						 &TASK_CLOUDStk[0u],			//stack
+						 TASK_CLOUD_STK_SIZE_LIMIT,	//stack limit
+						 TASK_CLOUD_STK_SIZE,		//stack size
+						  0u,
+						  0u,
+						  0u,
+						 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+						 &os_err);
+
 
 
 
