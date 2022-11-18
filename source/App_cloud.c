@@ -27,7 +27,8 @@
 #define RX_LENGTH	5
 
 #define KEEPALIVE_MS	1000
-#define DATA_MS			16000
+#define DATA_MS			15000
+#define TIMER_COUNT_RST	DATA_MS/KEEPALIVE_MS + 1
 
 #define PISO1_IDX		6
 #define PISO2_IDX		8
@@ -41,8 +42,7 @@ enum {IS_OK, IS_FAIL, IS_ERR, IS_DATA, IS_KEEPALIVE};
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-void Data_IRQ();
-void KeepAlive_IRQ();
+void cloudTimer_IRQ();
 void SendData();
 void KeepAlive();
 void checkRX();
@@ -59,8 +59,8 @@ static uint8_t data_msg[] = {0xAA, 0x55, 0xC3, 0x3C, 0x07, 0x01, 0x00, 0x00, 0x0
 // static uint16_t piso2 = 0;
 // static uint16_t piso3 = 0;
 
-static tim_id_t keepalive_timer;
-static tim_id_t data_timer;
+static tim_id_t cloud_timer;
+static uint8_t timer_count = 1;
 
 static bool keepalive_flag = false;
 static bool data_flag = false;
@@ -87,12 +87,8 @@ void App_Init_cloud (void)
 
 	// Inicializo timers
 	timerInit();
-	keepalive_timer = timerGetId();
-	data_timer = timerGetId();
-	timerStart(keepalive_timer, TIMER_MS2TICKS(KEEPALIVE_MS), TIM_MODE_PERIODIC, &KeepAlive_IRQ);
-	timerStart(data_timer, TIMER_MS2TICKS(DATA_MS), TIM_MODE_PERIODIC, &Data_IRQ);
-	timerExec(data_timer);
-}
+	cloud_timer = timerGetId();
+	timerStart(cloud_timer, TIMER_MS2TICKS(KEEPALIVE_MS), TIM_MODE_PERIODIC, &cloudTimer_IRQ);}
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run_cloud (void)
@@ -145,9 +141,14 @@ void checkRX(){
 	} else if (keepalive_flag) {						// Check KeepAlive
 		LedOff();
 	} else if (data_flag){
-		SendData();
+		if (uartGetRxMsgLength(UART_ID) >= RX_LENGTH){
+			checkRX();
+		} else {
+			SendData();
+		}
 	}
 }
+
 
 
 uint8_t handle_RX(){
@@ -174,17 +175,17 @@ uint8_t handle_RX(){
 	return r;
 }
 
-void KeepAlive_IRQ(){
+void cloudTimer_IRQ(){
 
-	KeepAlive();
-	keepalive_flag = true;
-	checkRX();
-}
+	if (!(--timer_count)){
+		SendData();
+		data_flag = true;
+		timer_count = TIMER_COUNT_RST;
+	} else {
+		KeepAlive();
+		keepalive_flag = true;
+	}
 
-void Data_IRQ(){
-
-	SendData();
-	data_flag = true;
 	checkRX();
 }
 
