@@ -1,17 +1,20 @@
 /***************************************************************************//**
   @file     user.h
-  @brief    user data base
-  @author   Ignacio Cutignola
+  @brief    User Database
+  @author   Ignacio Cutignola & Olivia De Vincenti
  ******************************************************************************/
 
 /*******************************************************************************
  *                      INCLUDE HEADER FILES                                    *
  ******************************************************************************/
+#include <utils/utils.h>
 #include "user.h"
 
 /*******************************************************************************
  *          CONSTANT AND MACRO DEFINITIONS USING #DEFINE                        *
  ******************************************************************************/
+
+#define USER_MAX_N		250
 #define USER_N_INIT		11
 
 /*******************************************************************************
@@ -23,29 +26,15 @@
  *                  VARIABLE PROTOTYPES WITH GLOBAL SCOPE                       *
  ******************************************************************************/
 
-static user_t user_db[USER_N_INIT];
-/*
- = {  user1, 
-						user2, 
-						user3,
-						user4,
-						user5,
-						cuty,				// TARJETA CUTY
-						pedro,				// TARJETA PEDRO
-						starbucks,		 	// TARJETA STARBUCKS
-						oli,				// TARJETA OLI
-						micho,				// TARJETA MICHO (UALA)
-						santander_pedro		// TARJETA SANTANDER PEDRO
-					};
-*/
-static uint8_t user_num = USER_N_INIT;
+static user_t user_db[USER_MAX_N];
+static share_user_t share_user;
+static uint16_t user_num = USER_N_INIT;
 static bool is_init = false;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-bool arr_eq(uint8_t* arr1, uint8_t arr1_len, uint8_t * arr2, uint8_t arr2_len);
-void blockUser(uint8_t id[]);
+
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -65,7 +54,7 @@ void blockUser(uint8_t id[]);
 void loadDataBase(){
 
 	if (!is_init){
-		
+
 		user_t user0 = {.index = 0, .id = {0, 0, 0, 0, 0, 0, 0, 0}, .pass = {0, 0, 0, 0}, .len = 4, .floor = 1, .is_inside = false, .is_blocked = false};
 		user_t user1 = {.index = 1, .id = {0, 0, 0, 0, 0, 0, 0, 1}, .pass = {0, 0, 0, 0, 1}, .len = 5, .floor = 1, .is_inside = false, .is_blocked = false};
 		user_t user2 = {.index = 2, .id = {1, 2, 3, 4, 0, 0, 0, 0}, .pass = {1, 1, 4, 4}, .len = 4, .floor = 1, .is_inside = false, .is_blocked = false};
@@ -96,61 +85,65 @@ void loadDataBase(){
 
 }
 
-bool checkUser(uint8_t id[], uint8_t pass[], uint8_t pass_len)
-{
-    bool answer = false;
+bool checkUser(uint8_t id[], uint8_t pass[], uint8_t pass_len){
 
-    uint8_t i;
-    for(i = 0; i < user_num; i++)
-    {
-        if ( !user_db[i].is_blocked && arr_eq(user_db[i].id, MAX_ID, id, MAX_ID) && arr_eq(user_db[i].pass, user_db[i].len, pass, pass_len) )
-        {
+    bool answer = false;
+    uint16_t i;
+    for(i = 0; i < user_num; i++){
+        if ( !user_db[i].is_blocked && arr_eq(user_db[i].id, MAX_ID, id, MAX_ID) && arr_eq(user_db[i].pass, user_db[i].len, pass, pass_len) ){
             answer = true;
             break;
         }
     }
 
     return answer;
-
 }
 
-uint8_t getUserIndex(uint8_t id[], uint8_t pass[], uint8_t pass_len)
+bool changeUserState(uint16_t index){
+
+	user_db[index].is_inside = !user_db[index].is_inside;
+	return user_db[index].is_inside;
+}
+
+uint16_t getUserIndex(uint8_t id[])
 {
-	uint8_t i;
-	for(i = 0; i < user_num; i++)
-	{
-		if ( arr_eq(user_db[i].id, MAX_ID, id, MAX_ID) )
-		{
+	uint16_t i;
+	for(i = 0; i < user_num; i++){
+		if ( arr_eq(user_db[i].id, MAX_ID, id, MAX_ID) ){
 			return i;
 		}
 	}
-	return (uint8_t)(-1);
+	return (uint16_t)(-1);
 }
 
-void blockUser(uint8_t id[]){
-    uint8_t i;
-    for (i = 0; i < user_num; i++){
-        if (arr_eq(user_db[i].id, MAX_ID, id, MAX_ID)){
-            user_db[i].is_blocked = true;
-            break;
-        }
-    }
+void blockUser(uint16_t index){
+    user_db[index].is_blocked = true;
 }
 
-uint8_t getFloorCount(uint8_t floor){
-	uint8_t floor_count = 0;
+share_user_t* shareUser(uint16_t index){
 	uint8_t i;
-    for (i = 0; i < user_num; i++){
-		if (user_db[i].floor == floor && user_db[i].is_inside){
-			floor_count++;
-		}
+	for (i = 0; i < MAX_ID; i++){
+		share_user.id[i] = user_db[index].id[i];
 	}
-	return floor_count;
+	share_user.floor = user_db[index].floor;
+	share_user.is_inside = user_db[index].is_inside;
+	return &share_user;
 }
 
-bool changeUserState(uint8_t index){
-	user_db[index].is_inside = !user_db[index].is_inside;
-	return user_db[index].is_inside;
+bool addUser(uint8_t* id, uint8_t* pass, uint8_t pass_len, uint8_t floor){
+	bool r = false;
+	if (user_num < USER_MAX_N){
+		user_db[user_num].index = user_num;
+		copy_arr(id, &user_db[user_num].id[0], MAX_ID);
+		copy_arr(pass, &user_db[user_num].pass[0], MAX_PASS);
+		user_db[user_num].len = pass_len;
+		user_db[user_num].floor = floor;
+		user_db[user_num].is_inside = false;
+		user_db[user_num].is_blocked = false;
+		user_num++;
+		r = true;
+	}
+	return r;
 }
 
 /*******************************************************************************
@@ -159,21 +152,6 @@ bool changeUserState(uint8_t index){
  *******************************************************************************
  ******************************************************************************/
 
-bool arr_eq(uint8_t* arr1, uint8_t arr1_len, uint8_t * arr2, uint8_t arr2_len){
-	bool r = false;
-	uint8_t i;
-	if (arr1_len == arr2_len){
-		for (i = 0; i < arr1_len; i++){
-			if (*(arr1 + i) == *(arr2 + i)){
-				r = true;
-			} else {
-				r = false;
-				break;
-			}
-		}
-	}
-	return r;
-}
 
 /*******************************************************************************
  ******************************************************************************/

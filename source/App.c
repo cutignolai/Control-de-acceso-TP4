@@ -18,8 +18,8 @@
 #include <drivers/encoder.h>
 #include <drivers/card_reader.h>
 #include <drivers/button.h>
-#include <drivers/user.h>
 #include <drivers/message.h>
+#include <users/user.h>
 
 
 /*******************************************************************************
@@ -144,7 +144,7 @@ static uint8_t wrong_count;
 static OS_PEND_DATA sem_pend_table[SEM_AMMOUNT];
 static OS_Q* queueSemPointer;
 
-static char msgCloud;
+static share_user_t* msgCloud;
 static bool sendCloud = false;
 /*******************************************************************************
  *******************************************************************************
@@ -617,24 +617,24 @@ static estadosDelMenu_t modificar_brillo(eventosDelMenu_t evento)
 static estadosDelMenu_t verificar_estado (void)
 {
     estadosDelMenu_t proximo_estado = ESTADO_ID;
-    
-
 
     uint8_t id_char[MAX_UNIT_ID];
-    for(int i = 0 ; i < MAX_UNIT_ID ; i++)
+    for (int i = 0 ; i < MAX_UNIT_ID ; i++)
     {
     	id_char[i] = (char)(id[i]);
     }
 
     uint8_t pass_char[posicion_pass + 1];
-    for(int i = 0 ; i < posicion_pass + 1; i++)
+    for (int i = 0 ; i < posicion_pass + 1; i++)
     {
         pass_char[i] = (char)(pass[i]);
     }
 
-    if( checkUser(id_char, pass_char, posicion_pass + 1) )
+    if (checkUser(id_char, pass_char, posicion_pass + 1))
     {
-    	msgCloud = getUserIndex(id_char, pass_char, posicion_pass + 1);
+		uint16_t index = getUserIndex(id_char);
+		changeUserState(index);
+    	msgCloud = shareUser(index);
 		proximo_estado = ESTADO_OPEN;
 		sendCloud = true;
     } 
@@ -693,7 +693,7 @@ static estadosDelMenu_t wrong_pin()
 		{
 			id_char[i] = (uint8_t)(id[i]);
 		}
-        blockUser(&id_char[0]);
+        blockUser(getUserIndex(&id_char[0]));
         reset_all();
         proximo_estado = ESTADO_INIT;
         messageSetStatus(ACTIVADO);

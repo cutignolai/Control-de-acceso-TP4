@@ -12,7 +12,7 @@
 #include <drivers/uart.h>
 #include <drivers/timer.h>
 #include <drivers/led.h>
-#include <drivers/user.h>
+#include <users/user_cloud.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -106,8 +106,8 @@ void App_Run_cloud (void)
 void SendData(){
 
 	uint16_t piso1 = getFloorCount(1);
-	uint16_t piso2 = 0;
-	uint16_t piso3 = 0;
+	uint16_t piso2 = getFloorCount(2);
+	uint16_t piso3 = getFloorCount(3);
 
 	data_msg[PISO1_IDX] = GET_LSBYTE(piso1);
 	data_msg[PISO1_IDX + 1] = GET_MSBYTE(piso1);
